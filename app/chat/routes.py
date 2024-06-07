@@ -35,7 +35,7 @@ async def create_document():
             elif await allowed_file_doc(file.filename):
                 file_to_txt = await get_text(file)
             elif await allowed_pdf(file.filename):
-                file_to_txt = await pdf_to_img(file, access_token)
+                file_to_txt = await pdf_to_img(file)
 
             is_practice = int(request.form['isPractice'])
 
