@@ -3,6 +3,7 @@ from app import db
 from app.models import chat as model_chat
 from app.models import file_data as model_file_data
 from app.models import message
+from app.models.user import User
 from app.file_processing import allowed_image, allowed_file_doc, allowed_pdf
 from app.vk_cloud import access_token, send_image, get_text, pdf_to_img
 from app.gigachat import send_with_doc
@@ -17,6 +18,9 @@ chat = Blueprint('chat', __name__)
 async def create_document():
     if 'file' in request.files:
         file = request.files['file']
+        user_hid = int(request.form['user_hid'])
+
+        user = db.session.query(User).filter(User.hid == user_hid).first()
 
         if file.filename == '':
             flash('No selected file')
@@ -39,7 +43,7 @@ async def create_document():
             answer_ai, chat_history = \
                 await send_with_doc(file_to_txt, question, '[]', True if is_practice == 1 else False)
 
-            new_chat = model_chat.Chat(name=file.filename, client_id=request.form['client_id'], hid=str(uuid.uuid4()),
+            new_chat = model_chat.Chat(name=file.filename, user=user, hid=str(uuid.uuid4()),
                                        type='analysis' if is_practice == 1 else 'document')
             db.session.add(new_chat)
             new_file_data = model_file_data.FileData(data=file_to_txt, chat=new_chat)
@@ -51,7 +55,7 @@ async def create_document():
 
             chats = db.session.query(model_chat.Chat).filter(
                 and_(
-                    model_chat.Chat.client_id == int(request.form['client_id']),
+                    model_chat.Chat.user_id == user.id,
                     or_(
                         model_chat.Chat.type == 'document',
                         model_chat.Chat.type == 'analysis'
@@ -77,9 +81,10 @@ async def create_document():
 async def create_chat():
     data = request.get_json()
 
-    client_id = int(data['client_id'])
+    user_hid = int(data['user_hid'])
+    user = db.session.query(User).filter(User.id == user_hid).first()
 
-    new_chat = model_chat.Chat(name="Чат с GigaChat", client_id=client_id, hid=str(uuid.uuid4()),
+    new_chat = model_chat.Chat(name="Чат с GigaChat", user=user, hid=str(uuid.uuid4()),
                                type='default')
 
     db.session.add(new_chat)
@@ -87,7 +92,7 @@ async def create_chat():
 
     chats = db.session.query(model_chat.Chat).filter(
         and_(
-            model_chat.Chat.client_id == client_id,
+            model_chat.Chat.user_id == user.id,
             model_chat.Chat.type == 'default'
         )
     ).all()
@@ -108,11 +113,11 @@ async def create_chat():
     return {'response': response, 'chat': new_chat.to_dict()}
 
 
-@chat.route('/documents/<int:client_id>', methods=['GET'])
-async def get_documents_chats(client_id: int):
+@chat.route('/documents/<int:user_id>', methods=['GET'])
+async def get_documents_chats(user_id: int):
     chats = db.session.query(model_chat.Chat).filter(
         and_(
-            model_chat.Chat.client_id == client_id,
+            model_chat.Chat.user_id == user_id,
             or_(
                 model_chat.Chat.type == 'document',
                 model_chat.Chat.type == 'analysis'
@@ -132,11 +137,11 @@ async def get_documents_chats(client_id: int):
     return response
 
 
-@chat.route('/chats/<int:client_id>', methods=['GET'])
-async def get_chats(client_id: int):
+@chat.route('/chats/<int:user_id>', methods=['GET'])
+async def get_chats(user_id: int):
     chats = db.session.query(model_chat.Chat).filter(
         and_(
-            model_chat.Chat.client_id == client_id,
+            model_chat.Chat.client_id == user_id,
             model_chat.Chat.type == 'default'
         )
     ).all()
