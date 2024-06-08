@@ -34,7 +34,7 @@ def login():
     ...
 
 
-@user_print.route('/all', methods=['GET'])
+@user_print.route('/get/all', methods=['GET'])
 def get_all_users():
     users = User.query.all()
     response = []
