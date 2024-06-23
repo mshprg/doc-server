@@ -1,19 +1,9 @@
-from flask import Response, Blueprint, request
-import bcrypt
+from flask import Blueprint, request
 from app.models.user import User
+from app import db
 import uuid
 
 user_print = Blueprint('user', __name__)
-
-
-def hash_password(password: str) -> str:
-    salt = bcrypt.gensalt()
-    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
-    return hashed_password.decode('utf-8')
-
-
-def check_password(password: str, hashed_password: str) -> bool:
-    return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 
 @user_print.route('/create', methods=['POST'])
@@ -21,17 +11,15 @@ def create_user():
     data = request.get_json()
     email = data['email']
     password = data['password']
-    tokens = 100
+    tokens = 0
+    images = 0
     hid = str(uuid.uuid4())
-    new_user = User(hid=hid, email=email, password=hash_password(password), tokens=tokens)
+    new_user = User(hid=hid, email=email, password=password, tokens=tokens, images=images)
 
-    # TODO: Регистарция
+    db.session.add(new_user)
+    db.session.commit()
 
-
-@user_print.route('/login', methods=['POST'])
-def login():
-    # TODO: Авторизация
-    ...
+    return new_user.to_dict()
 
 
 @user_print.route('/all', methods=['GET'])

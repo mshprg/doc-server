@@ -55,7 +55,7 @@ async def get_text(file):
     full_text = []
     for para in doc.paragraphs:
         full_text.append(para.text)
-    return '\n'.join(full_text)
+    return '\n'.join(full_text), len(doc.paragraphs)
 
 
 async def pdf_to_img(file):
@@ -66,7 +66,7 @@ async def pdf_to_img(file):
         image.save(img_byte_arr, format='PNG')
         img_byte_arr = img_byte_arr.getvalue()
         output_str += await send_image(img_byte_arr)
-    return output_str
+    return output_str, len(images)
 
 
 def refresh_tok():

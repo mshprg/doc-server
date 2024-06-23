@@ -1,5 +1,6 @@
 import asyncio
 import json
+import re
 import uuid
 from langchain_community.chat_models import GigaChat
 from langchain.text_splitter import (
@@ -37,11 +38,17 @@ async def send_with_doc(text, question, chat_history, analysis):
         credentials="NWFhZWZjOWItYzJiZS00OWEwLWJjNDgtN2EzZTA0ZWEyOWIxOjFjNzZiM2EzLWVmYTctNGFmZi1hMDNhLTY1NmIxZGYyMmQ4ZA==",
         verify_ssl_certs=False
     )
+
     db = Chroma.from_texts(
         splits,
         embeddings,
         client_settings=Settings(anonymized_telemetry=False),
     )
+
+    # print(llm.tokens_count(mas))
+    tok = 0
+    for i in llm.tokens_count(splits):
+        tok += int(re.search(r"tokens=\d*", str(i)).group(0)[7:])
 
     # Извлечение данных и генерация с помощью релевантных фрагментов блога.
     retriever = db.as_retriever()
@@ -69,15 +76,21 @@ async def send_with_doc(text, question, chat_history, analysis):
             ("human", "{input}"),
         ]
     )
+    all_message = 0
+    all_message += tok
+    mas = [f'("system", {qa_system_prompt}),MessagesPlaceholder("chat_history"),("human", "{input}")']
+    all_message += llm.tokens_count(mas)
+    mas = [f'("system", {contextualize_q_system_prompt}),MessagesPlaceholder("chat_history"),("human", "{input}")']
+    all_message += llm.tokens_count(mas)
+    mas = [str(question)]
+    all_message += llm.tokens_count(mas)
 
     chat_history = ast.literal_eval(chat_history)
-
     question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
-
     rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
     ai_msg = rag_chain.invoke({"input": question, "chat_history": chat_history})
     chat_history.extend([question, ai_msg["answer"]])
-    return ai_msg["answer"], chat_history
+    return ai_msg["answer"], chat_history, tok, all_message
 
 
 async def get_message_history(auth_token, conversation_history=None):
@@ -112,6 +125,7 @@ async def get_message_history(auth_token, conversation_history=None):
     try:
         response = requests.post(url, headers=headers, data=payload, verify=False)
         response_data = response.json()
+        token_used = response_data['usage']['total_tokens']
 
         # Добавляем ответ модели в историю диалога
         conversation_history.append({
@@ -119,10 +133,10 @@ async def get_message_history(auth_token, conversation_history=None):
             "content": response_data['choices'][0]['message']['content']
         })
 
-        return response_data['choices'][0]['message']['content'], conversation_history
+        return response_data['choices'][0]['message']['content'], conversation_history, token_used
     except requests.RequestException as e:
         # Обработка исключения в случае ошибки запроса
-        return None, conversation_history
+        return None, conversation_history, 0
 
 
 def refresh():

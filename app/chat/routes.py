@@ -22,6 +22,8 @@ async def create_document():
 
         user = db.session.query(User).filter(User.hid == user_hid).first()
 
+        vk_tokens = 0
+
         if file.filename == '':
             flash('No selected file')
             return redirect(request.url)
@@ -32,15 +34,18 @@ async def create_document():
 
             if await allowed_image(file.filename):
                 file_to_txt = await send_image(file)
+                vk_tokens = 1
             elif await allowed_file_doc(file.filename):
-                file_to_txt = await get_text(file)
+                file_to_txt, tk = await get_text(file)
+                vk_tokens = tk
             elif await allowed_pdf(file.filename):
-                file_to_txt = await pdf_to_img(file)
+                file_to_txt, tk = await pdf_to_img(file)
+                vk_tokens = tk
 
             is_practice = int(request.form['isPractice'])
 
             question = "Проанализируй и запомни этот документ"
-            answer_ai, chat_history = \
+            answer_ai, chat_history, em_tokens, ms_tokens = \
                 await send_with_doc(file_to_txt, question, '[]', True if is_practice == 1 else False)
 
             new_chat = model_chat.Chat(name=file.filename, user=user, hid=str(uuid.uuid4()),
@@ -51,6 +56,13 @@ async def create_document():
 
             message_answer = message.Message(text=answer_ai, chat=new_chat, role='assistant')
             db.session.add(message_answer)
+
+            mt = user.message_tokens + ms_tokens
+            et = user.embedding_tokens + em_tokens
+
+            user.message_tokens = mt
+            user.embedding_tokens = et
+
             db.session.commit()
 
             chats = db.session.query(model_chat.Chat).filter(

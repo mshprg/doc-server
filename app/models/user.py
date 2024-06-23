@@ -6,7 +6,9 @@ class User(db.Models):
     hid = db.Column(db.String(), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(), nullable=False)
-    tokens = db.Column(db.Integer, nullable=False)
+    message_tokens = db.Column(db.Integer, nullable=False)
+    embedding_tokens = db.Column(db.Integer, nullable=False)
+    images = db.Column(db.Integer, nullable=False)
     chats = db.relationship('Chat', backref='user', lazy=True)
 
     def to_dict(self):
@@ -14,5 +16,7 @@ class User(db.Models):
             'id': self.id,
             'email': self.email,
             'password': self.password,
-            'tokens': self.tokens
+            'message_tokens': self.message_tokens,
+            'embedding_tokens': self.embedding_tokens,
+            'images': self.images
         }

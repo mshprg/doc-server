@@ -2,6 +2,8 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 
+from app.decorators import check_authorization
+
 db = SQLAlchemy()
 
 
