@@ -15,7 +15,7 @@ class Chat(db.Model):
         return {
             'id': self.id,
             'name': self.name,
-            'client_id': self.client_id,
+            'user_id': self.user_id,
             'hid': self.hid,
             'type': self.type
         }

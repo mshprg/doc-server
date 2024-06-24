@@ -79,11 +79,11 @@ async def send_with_doc(text, question, chat_history, analysis):
     all_message = 0
     all_message += tok
     mas = [f'("system", {qa_system_prompt}),MessagesPlaceholder("chat_history"),("human", "{input}")']
-    all_message += llm.tokens_count(mas)
+    all_message += llm.tokens_count(mas)[0].tokens
     mas = [f'("system", {contextualize_q_system_prompt}),MessagesPlaceholder("chat_history"),("human", "{input}")']
-    all_message += llm.tokens_count(mas)
+    all_message += llm.tokens_count(mas)[0].tokens
     mas = [str(question)]
-    all_message += llm.tokens_count(mas)
+    all_message += llm.tokens_count(mas)[0].tokens
 
     chat_history = ast.literal_eval(chat_history)
     question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)

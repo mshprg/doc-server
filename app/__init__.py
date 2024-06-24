@@ -1,7 +1,7 @@
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-
 from app.decorators import check_authorization
 
 db = SQLAlchemy()
@@ -10,6 +10,8 @@ db = SQLAlchemy()
 def create_app():
     app = Flask(__name__)
     app.config.from_object('config.Config')
+
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
     cors = CORS(app, resources={r"*": {"origins": "*"}})
 

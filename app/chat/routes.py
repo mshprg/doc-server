@@ -94,10 +94,11 @@ async def create_document():
 async def create_chat():
     data = request.get_json()
 
-    user_hid = int(data['user_hid'])
-    user = db.session.query(User).filter(User.id == user_hid).first()
+    user_hid = data['user_hid']
+    chat_name = data['name']
+    user = db.session.query(User).filter(User.hid == user_hid).first()
 
-    new_chat = model_chat.Chat(name="Чат с GigaChat", user=user, hid=str(uuid.uuid4()),
+    new_chat = model_chat.Chat(name=chat_name, user=user, hid=str(uuid.uuid4()),
                                type='default')
 
     db.session.add(new_chat)
@@ -123,7 +124,7 @@ async def create_chat():
             {'chat': chat_obj.to_dict(), 'last_message': d}
         )
 
-    return {'response': response, 'chat': new_chat.to_dict()}
+    return {'all_chats': response, 'new_chat': new_chat.to_dict()}
 
 
 @chat.route('/documents/<int:user_id>', methods=['GET'])
