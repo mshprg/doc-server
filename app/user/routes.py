@@ -11,10 +11,8 @@ def create_user():
     data = request.get_json()
     email = data['email']
     password = data['password']
-    tokens = 0
-    images = 0
     hid = str(uuid.uuid4())
-    new_user = User(hid=hid, email=email, password=password, tokens=tokens, images=images)
+    new_user = User(hid=hid, email=email, password=password, messsage_tokens=0, embedding_tokens=0, images=0)
 
     db.session.add(new_user)
     db.session.commit()

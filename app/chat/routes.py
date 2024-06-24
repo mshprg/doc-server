@@ -5,7 +5,7 @@ from app.models import file_data as model_file_data
 from app.models import message
 from app.models.user import User
 from app.file_processing import allowed_image, allowed_file_doc, allowed_pdf
-from app.vk_cloud import access_token, send_image, get_text, pdf_to_img
+from app.vk_cloud import send_image, get_text, pdf_to_img
 from app.gigachat import send_with_doc
 from flask import Response
 from sqlalchemy import and_, or_
@@ -62,6 +62,7 @@ async def create_document():
 
             user.message_tokens = mt
             user.embedding_tokens = et
+            user.images = vk_tokens
 
             db.session.commit()
 
@@ -149,11 +150,11 @@ async def get_documents_chats(user_id: int):
     return response
 
 
-@chat.route('/chats/<int:user_id>', methods=['GET'])
+@chat.route('/defaults/<int:user_id>', methods=['GET'])
 async def get_chats(user_id: int):
     chats = db.session.query(model_chat.Chat).filter(
         and_(
-            model_chat.Chat.client_id == user_id,
+            model_chat.Chat.user_id == user_id,
             model_chat.Chat.type == 'default'
         )
     ).all()

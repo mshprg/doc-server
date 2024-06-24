@@ -2,6 +2,7 @@ import time
 
 from flask import Blueprint, request, flash, redirect
 from app.models import chat as chat_model
+from app.models.user import User
 from app.models import message as message_model
 from app.models import file_data
 from sqlalchemy import asc
@@ -26,6 +27,8 @@ async def ask_gpt():
 
     chat = db.session.query(chat_model.Chat).filter(chat_model.Chat.hid == hid).first()
 
+    user = db.session.query(User).filter(User.id == chat.user_id).first()
+
     messages = db.session.query(message_model.Message).filter(message_model.Message.chat_id == chat.id).order_by(
         asc(message_model.Message.created_at)).all()
 
@@ -40,12 +43,16 @@ async def ask_gpt():
 
     if chat.type == 'default':
         history.append({'role': 'user', 'content': text})
-        answer_ai, _ = await get_message_history(giga_token, history)
+        answer_ai, _, token_used = await get_message_history(giga_token, history)
+        user.message_tokens += token_used
     else:
         file = db.session.query(file_data.FileData).filter(file_data.FileData.chat_id == chat.id).first()
         file_text = file.data
 
-        answer_ai, _ = await send_with_doc(file_text, text, str(history), True if chat.type == 'analysis' else False)
+        answer_ai, _, em_tokens, ms_tokens = \
+            await send_with_doc(file_text, text, str(history), True if chat.type == 'analysis' else False)
+        user.message_tokens += ms_tokens
+        user.embedding_tokens += em_tokens
 
     new_message_answer = message_model.Message(text=answer_ai, chat=chat, role='assistant')
 
