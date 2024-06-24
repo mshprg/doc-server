@@ -18,7 +18,7 @@ chat = Blueprint('chat', __name__)
 async def create_document():
     if 'file' in request.files:
         file = request.files['file']
-        user_hid = int(request.form['user_hid'])
+        user_hid = request.form['user_hid']
 
         user = db.session.query(User).filter(User.hid == user_hid).first()
 

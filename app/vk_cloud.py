@@ -78,4 +78,3 @@ def refresh_tok():
 client_id = "mcs9064514905.ml.vision.3Yzx3KihTHQ5NjsZuVr2w"
 client_secret = "B1ckyuc8AXL7QhBNWGqKWz5F4gEFW5wE6kZ4SwnjFSRxbpp67ZbCPh7zYUjD1"
 refresh_token = "2JZfPKgXiBL1zqijvk85yS5aadLgvYLUrstURL2EWjDiSMoWFS"
-# print(get_access_token(client_id, refresh_token))

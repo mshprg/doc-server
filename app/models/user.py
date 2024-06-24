@@ -1,7 +1,7 @@
 from app import db
 
 
-class User(db.Models):
+class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     hid = db.Column(db.String(), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -14,6 +14,7 @@ class User(db.Models):
     def to_dict(self):
         return {
             'id': self.id,
+            'hid': self.hid,
             'email': self.email,
             'password': self.password,
             'message_tokens': self.message_tokens,
