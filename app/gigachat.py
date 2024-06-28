@@ -16,11 +16,12 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 import ast
 from app.prompts import contextualize_q_system_prompt, qa_system_prompt, qa_system_prompt_practic
 import requests
+import os
 
 contextualize_q_system_prompt = contextualize_q_system_prompt
 qa_system_prompt = qa_system_prompt
 qa_system_prompt_practic = qa_system_prompt_practic
-auth = 'NWFhZWZjOWItYzJiZS00OWEwLWJjNDgtN2EzZTA0ZWEyOWIxOjFjNzZiM2EzLWVmYTctNGFmZi1hMDNhLTY1NmIxZGYyMmQ4ZA=='
+auth = "NWFhZWZjOWItYzJiZS00OWEwLWJjNDgtN2EzZTA0ZWEyOWIxOjFjNzZiM2EzLWVmYTctNGFmZi1hMDNhLTY1NmIxZGYyMmQ4ZA==" # os.environ.get('GIGACHAT_AUTH')
 
 
 async def send_with_doc(text, question, chat_history, analysis):
@@ -31,11 +32,11 @@ async def send_with_doc(text, question, chat_history, analysis):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     splits = text_splitter.split_text(text)
     llm = GigaChat(
-        credentials="NWFhZWZjOWItYzJiZS00OWEwLWJjNDgtN2EzZTA0ZWEyOWIxOjFjNzZiM2EzLWVmYTctNGFmZi1hMDNhLTY1NmIxZGYyMmQ4ZA==",
+        credentials=auth,
         verify_ssl_certs=False)
 
     embeddings = GigaChatEmbeddings(
-        credentials="NWFhZWZjOWItYzJiZS00OWEwLWJjNDgtN2EzZTA0ZWEyOWIxOjFjNzZiM2EzLWVmYTctNGFmZi1hMDNhLTY1NmIxZGYyMmQ4ZA==",
+        credentials=auth,
         verify_ssl_certs=False
     )
 

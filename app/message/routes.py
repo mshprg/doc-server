@@ -1,19 +1,18 @@
 import time
-
-from flask import Blueprint, request, flash, redirect
-from app.models import chat as chat_model
+from flask import Blueprint, request
+from app.models.chat import Chat
 from app.models.user import User
-from app.models import message as message_model
+from app.models.message import Message
 from app.models import file_data
 from sqlalchemy import asc
 from app.gigachat import send_with_doc, get_message_history
 from app import db
 from app.gigachat import refresh, expires_at, lock, giga_token
 
-message = Blueprint('message', __name__)
+message_print = Blueprint('message', __name__)
 
 
-@message.route('/ask-gpt', methods=['POST'])
+@message_print.route('/ask-gpt', methods=['POST'])
 async def ask_gpt():
 
     if round(time.time() * 1000) >= expires_at:
@@ -25,14 +24,14 @@ async def ask_gpt():
     text = data['text']
     hid = data['hid']
 
-    chat = db.session.query(chat_model.Chat).filter(chat_model.Chat.hid == hid).first()
+    chat = db.session.query(Chat).filter(Chat.hid == hid).first()
 
     user = db.session.query(User).filter(User.id == chat.user_id).first()
 
-    messages = db.session.query(message_model.Message).filter(message_model.Message.chat_id == chat.id).order_by(
-        asc(message_model.Message.created_at)).all()
+    messages = db.session.query(Message).filter(Message.chat_id == chat.id).order_by(
+        asc(Message.created_at)).all()
 
-    new_message_question = message_model.Message(text=text, chat=chat, role='user')
+    new_message_question = Message(text=text, chat=chat, role='user')
 
     history = []
 
@@ -54,7 +53,7 @@ async def ask_gpt():
         user.message_tokens += ms_tokens
         user.embedding_tokens += em_tokens
 
-    new_message_answer = message_model.Message(text=answer_ai, chat=chat, role='assistant')
+    new_message_answer = Message(text=answer_ai, chat=chat, role='assistant')
 
     db.session.add(new_message_question)
     db.session.add(new_message_answer)
@@ -63,11 +62,11 @@ async def ask_gpt():
     return {'question': new_message_question.to_dict(), 'answer': new_message_answer.to_dict()}
 
 
-@message.route('/all/<int:chat_id>', methods=['GET'])
+@message_print.route('/all/<int:chat_id>', methods=['GET'])
 async def get_all_messages_by_chat_id(chat_id: int):
 
-    messages = db.session.query(message_model.Message).filter(message_model.Message.chat_id == chat_id).order_by(
-        asc(message_model.Message.created_at)).all()
+    messages = db.session.query(Message).filter(Message.chat_id == chat_id).order_by(
+        asc(Message.created_at)).all()
 
     response = []
 

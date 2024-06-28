@@ -1,4 +1,5 @@
 import asyncio
+import os
 import time
 import requests
 import docx
@@ -7,6 +8,7 @@ import io
 
 lock = asyncio.Lock()
 access_token = "6QNmzdpQrmR3wavR8WphKDjiDq8Uaf2FBUvRkWbBdCLNvRNZw"
+refresh_token = os.environ.get("VK_REFRESH_TOKEN")
 token_expired = 0
 
 
@@ -75,6 +77,6 @@ def refresh_tok():
     token_expired = time.time() + 3600
     return
 
-client_id = "mcs9064514905.ml.vision.3Yzx3KihTHQ5NjsZuVr2w"
-client_secret = "B1ckyuc8AXL7QhBNWGqKWz5F4gEFW5wE6kZ4SwnjFSRxbpp67ZbCPh7zYUjD1"
-refresh_token = "2JZfPKgXiBL1zqijvk85yS5aadLgvYLUrstURL2EWjDiSMoWFS"
+
+client_id = os.environ.get("VK_CLIENT_ID")
+client_secret = os.environ.get("VK_CLIENT_SECRET")

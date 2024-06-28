@@ -18,11 +18,11 @@ def create_app():
     db.init_app(app)
 
     # Импортируем и регистрируем Blueprint
-    from app.chat.routes import chat
-    from app.message.routes import message
+    from app.chat.routes import chat_print
+    from app.message.routes import message_print
     from app.user.routes import user_print
-    app.register_blueprint(message, url_prefix='/message')
-    app.register_blueprint(chat, url_prefix='/chat')
+    app.register_blueprint(message_print, url_prefix='/message')
+    app.register_blueprint(chat_print, url_prefix='/chat')
     app.register_blueprint(user_print, url_prefix='/user')
 
     with app.app_context():
