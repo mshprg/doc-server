@@ -44,7 +44,7 @@ async def create_document():
 
             is_practice = int(request.form['isPractice'])
 
-            question = "Проанализируй и запомни этот документ"
+            question = "Проанализируй и запомни этот текст"
             answer_ai, chat_history, em_tokens, ms_tokens = \
                 await send_with_doc(file_to_txt, question, '[]', True if is_practice == 1 else False)
 
@@ -90,6 +90,41 @@ async def create_document():
                 )
 
             return {'all_chats': response, 'new_chat': new_chat.to_dict()}
+
+    return Response({'message': 'Bad request'}, status=400, mimetype='application/json')
+
+
+@chat_print.route('/create/document-test', methods=['POST'])
+async def create_document_test():
+    if 'file' in request.files:
+        file = request.files['file']
+
+        vk_tokens = 0
+
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+
+        if file and (await allowed_image(file.filename) or await allowed_file_doc(file.filename) or await allowed_pdf(
+                file.filename)):
+            file_to_txt = ""
+
+            if await allowed_image(file.filename):
+                file_to_txt = await send_image(file)
+                vk_tokens = 1
+            elif await allowed_file_doc(file.filename):
+                file_to_txt, tk = await get_text(file)
+                vk_tokens = tk
+            elif await allowed_pdf(file.filename):
+                file_to_txt, tk = await pdf_to_img(file)
+                vk_tokens = tk
+
+            question = "Проанализируй и запомни этот текст"
+            answer_ai, chat_history, em_tokens, ms_tokens = \
+                await send_with_doc(file_to_txt, question, '[]', False)
+            
+
+            return {'text': answer_ai, 'history': chat_history}
 
     return Response({'message': 'Bad request'}, status=400, mimetype='application/json')
 
