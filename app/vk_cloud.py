@@ -74,7 +74,7 @@ async def pdf_to_img(file):
 def refresh_tok():
     global access_token, token_expired
     access_token = get_access_token(client_id, refresh_token)['access_token']
-    token_expired = time.time() + 3600
+    token_expired = time.time() + 1800
     return
 
 
