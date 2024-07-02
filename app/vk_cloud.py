@@ -28,7 +28,7 @@ def get_access_token(client_id, refresh_token):
 
 async def send_image(file):
     global token_expired, access_token
-    if round(time.time() * 1000) >= token_expired:
+    if time.time() >= token_expired:
         async with lock:
             refresh_tok()
     url = f'https://smarty.mail.ru/api/v1/text/recognize?oauth_token={access_token}&oauth_provider=mcs'
