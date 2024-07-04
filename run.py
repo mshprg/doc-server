@@ -6,9 +6,9 @@ load_dotenv()
 app = create_app()
 
 
-@app.before_request
-def before_request():
-    return check_authorization(lambda: None)()
+#@app.before_request
+#def before_request():
+#    return check_authorization(lambda: None)()
 
 
 if __name__ == '__main__':
