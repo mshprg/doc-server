@@ -21,7 +21,7 @@ import os
 contextualize_q_system_prompt = contextualize_q_system_prompt
 qa_system_prompt = qa_system_prompt
 qa_system_prompt_practic = qa_system_prompt_practic
-auth = "NWFhZWZjOWItYzJiZS00OWEwLWJjNDgtN2EzZTA0ZWEyOWIxOjFjNzZiM2EzLWVmYTctNGFmZi1hMDNhLTY1NmIxZGYyMmQ4ZA==" # os.environ.get('GIGACHAT_AUTH')
+auth = os.environ.get('GIGACHAT_AUTH')
 
 
 async def send_with_doc(text, question, chat_history, analysis):
